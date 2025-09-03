@@ -30,3 +30,16 @@ Instead of opening dozens of YouTube tabs, you can arrange multiple streams in a
    ```bash
    git clone https://github.com/youruser/news-wall.git
    cd news-wall
+
+News Wall/
+├── AppDelegate.swift
+├── main.swift
+├── UI/
+│   ├── TileView.swift        # Wrapper around WKWebView for YouTube embeds
+│   ├── WallViewController.swift
+│   ├── ChannelsWindowController.swift
+│   └── ...
+├── Models/
+│   └── ChannelStore.swift    # JSON persistence for channel lists
+├── README.md
+└── ROADMAP.md
