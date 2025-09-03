@@ -5,9 +5,9 @@ Instead of opening dozens of YouTube tabs, you can arrange multiple streams in a
 
 ## Features
 
-- 🎥 **Grid of Streams** – Watch 2×2 up to 4×4 YouTube live channels simultaneously.  
-- 🔊 **One-Audio Rule** – Only the active tile plays sound; all others remain muted.  
-- ⌨️ **Keyboard Controls** –  
+- **Grid of Streams** – Watch 2×2 up to 4×4 YouTube live channels simultaneously.  
+- **One-Audio Rule** – Only the active tile plays sound; all others remain muted.  
+- **Keyboard Controls** –  
   - Arrows: move active selection  
   - `Cmd+←/→`: flip pages  
   - Space: enforce one-audio rule  
