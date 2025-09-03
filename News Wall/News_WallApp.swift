@@ -1,17 +1,12 @@
-//
-//  News_WallApp.swift
-//  News Wall
-//
-//  Created by Ben M. Roshi on 9/3/25.
-//
-
-import SwiftUI
+import AppKit
 
 @main
-struct News_WallApp: App {
-    var body: some Scene {
-        WindowGroup {
-            ContentView()
-        }
+final class Main {
+    static func main() {
+        let app = NSApplication.shared
+        let delegate = AppDelegate()
+        app.delegate = delegate
+        app.setActivationPolicy(.regular)
+        app.run()
     }
 }
