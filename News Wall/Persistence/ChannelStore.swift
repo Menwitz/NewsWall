@@ -34,12 +34,14 @@ final class ChannelStore {
 
     // Curated 24/7 live news channels
     static let seed: [Channel] = [
-        // Global News
+        // Global English News
         Channel(title: "Sky News", url: URL(string:"https://www.youtube.com/watch?v=9Auq9mYxFEE")!, group: "World"),
         Channel(title: "Al Jazeera English", url: URL(string:"https://www.youtube.com/watch?v=gCNeDWCI0vo")!, group: "World"),
         Channel(title: "BBC News", url: URL(string:"https://www.youtube.com/watch?v=pSa4yQr2fdQ")!, group: "World"),
         Channel(title: "DW News", url: URL(string:"https://www.youtube.com/watch?v=NiRIbKwAejk")!, group: "World"),
         Channel(title: "France 24 English", url: URL(string:"https://www.youtube.com/watch?v=l8PMl7tUDIE")!, group: "World"),
+        Channel(title: "TRT World", url: URL(string:"https://www.youtube.com/watch?v=V9nNeO0yWyk")!, group: "World"),
+        Channel(title: "CBC News", url: URL(string:"https://www.youtube.com/watch?v=3G1bnMuffJE")!, group: "World"),
         
         // US News
         Channel(title: "NBC News NOW", url: URL(string:"https://www.youtube.com/watch?v=iEpJwprxDdk")!, group: "Finance"),
@@ -53,6 +55,18 @@ final class ChannelStore {
         // Asian News
         Channel(title: "WION", url: URL(string:"https://www.youtube.com/watch?v=b6R9-7KZ8YM")!, group: "World"),
         Channel(title: "CNA", url: URL(string:"https://www.youtube.com/watch?v=XWq5kBlakcQ")!, group: "World"),
+        
+        // French Channels
+        Channel(title: "France 24 Français", url: URL(string:"https://www.youtube.com/watch?v=Z-Nwo-ypKtM")!, group: "French"),
+        Channel(title: "TV5MONDE Info", url: URL(string:"https://www.youtube.com/watch?v=jdqM9Ay5bNk")!, group: "French"),
+        Channel(title: "BFM TV", url: URL(string:"https://www.youtube.com/watch?v=eN24Sv0qS1w")!, group: "French"),
+        Channel(title: "Euronews Français", url: URL(string:"https://www.youtube.com/watch?v=NiRIbKwAejk")!, group: "French"),
+        
+        // Arabic Channels
+        Channel(title: "Al Jazeera Arabic", url: URL(string:"https://www.youtube.com/watch?v=bNyUyrR0PHo")!, group: "Arabic"),
+        Channel(title: "Al Arabiya", url: URL(string:"https://www.youtube.com/watch?v=6TLo4Z_LWu4")!, group: "Arabic"),
+        Channel(title: "Al Hadath", url: URL(string:"https://www.youtube.com/watch?v=h8yY-YJa5Dc")!, group: "Arabic"),
+        Channel(title: "France 24 Arabic", url: URL(string:"https://www.youtube.com/watch?v=miMgQ3g6X7A")!, group: "Arabic"),
         
         // Tech & Innovation
         Channel(title: "Euronews", url: URL(string:"https://www.youtube.com/watch?v=pykpO5kQJ98")!, group: "Tech"),

@@ -36,7 +36,7 @@ final class LayoutStore: ObservableObject {
         
         // Create default layout if none exist
         if layouts.isEmpty {
-            let defaultLayout = Layout(name: "Default", rows: 3, cols: 3)
+            let defaultLayout = Layout(name: "Default", rows: 4, cols: 4)
             layouts.append(defaultLayout)
             activeLayoutID = defaultLayout.id
             save()

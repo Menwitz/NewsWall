@@ -23,8 +23,8 @@ final class SettingsStore: ObservableObject {
     
     private init() {
         UserDefaults.standard.register(defaults: [
-            "gridRows": 3,
-            "gridCols": 3,
+            "gridRows": 4,
+            "gridCols": 4,
             "ytControls": false,
             "watchdogInterval": 6.0,
             "watchdogStallTicks": 4

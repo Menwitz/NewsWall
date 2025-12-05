@@ -3,6 +3,7 @@ import WebKit
 
 protocol TileViewDelegate: AnyObject {
     func tileRequestedActivate(_ tile: TileView)
+    func tileRequestedFocus(_ tile: TileView)
 }
 
 final class TileView: NSView, WKNavigationDelegate {
@@ -119,7 +120,7 @@ final class TileView: NSView, WKNavigationDelegate {
     @objc private func handleClick() { delegate?.tileRequestedActivate(self) }
 
     @objc private func doubleClicked() {
-        reload()
+        delegate?.tileRequestedFocus(self)
     }
 
 //    func load() {
