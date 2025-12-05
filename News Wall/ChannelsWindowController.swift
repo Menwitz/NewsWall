@@ -35,6 +35,7 @@ final class ChannelsWindowController: NSWindowController, NSTableViewDataSource,
         table.usesAlternatingRowBackgroundColors = true
         table.delegate = self
         table.dataSource = self
+        table.registerForDraggedTypes([.init("com.menwitz.News-Wall.channel")])
 
         scroll.documentView = table
         scroll.hasVerticalScroller = true
@@ -45,9 +46,11 @@ final class ChannelsWindowController: NSWindowController, NSTableViewDataSource,
         let addBtn = NSButton(title: "Add", target: self, action: #selector(add))
         let delBtn = NSButton(title: "Remove", target: self, action: #selector(remove))
         let editBtn = NSButton(title: "Edit", target: self, action: #selector(edit))
+        let importBtn = NSButton(title: "Import", target: self, action: #selector(importChannels))
+        let exportBtn = NSButton(title: "Export", target: self, action: #selector(exportChannels))
         let saveBtn = NSButton(title: "Save", target: self, action: #selector(save))
 
-        for b in [addBtn, delBtn, editBtn, saveBtn] { b.translatesAutoresizingMaskIntoConstraints = false; content.addSubview(b) }
+        for b in [addBtn, delBtn, editBtn, importBtn, exportBtn, saveBtn] { b.translatesAutoresizingMaskIntoConstraints = false; content.addSubview(b) }
 
         NSLayoutConstraint.activate([
             scroll.leadingAnchor.constraint(equalTo: content.leadingAnchor, constant: 12),
@@ -63,6 +66,12 @@ final class ChannelsWindowController: NSWindowController, NSTableViewDataSource,
 
             editBtn.leadingAnchor.constraint(equalTo: delBtn.trailingAnchor, constant: 8),
             editBtn.bottomAnchor.constraint(equalTo: addBtn.bottomAnchor),
+
+            importBtn.leadingAnchor.constraint(equalTo: editBtn.trailingAnchor, constant: 20),
+            importBtn.bottomAnchor.constraint(equalTo: addBtn.bottomAnchor),
+
+            exportBtn.leadingAnchor.constraint(equalTo: importBtn.trailingAnchor, constant: 8),
+            exportBtn.bottomAnchor.constraint(equalTo: addBtn.bottomAnchor),
 
             saveBtn.trailingAnchor.constraint(equalTo: content.trailingAnchor, constant: -12),
             saveBtn.bottomAnchor.constraint(equalTo: addBtn.bottomAnchor)
@@ -80,11 +89,39 @@ final class ChannelsWindowController: NSWindowController, NSTableViewDataSource,
         switch tableColumn?.identifier.rawValue {
         case "title":   text.stringValue = item.title
         case "url":     text.stringValue = item.url.absoluteString
-        case "group":   text.stringValue = item.group.rawValue
+        case "group":   text.stringValue = item.group
         case "enabled": text.stringValue = item.enabled ? "✓" : ""
         default: break
         }
         return text
+    }
+
+    // MARK: - Drag & Drop
+    func tableView(_ tableView: NSTableView, writeRowsWith rowIndexes: IndexSet, to pboard: NSPasteboard) -> Bool {
+        guard let row = rowIndexes.first else { return false }
+        pboard.declareTypes([.init("com.menwitz.News-Wall.channel")], owner: self)
+        pboard.setString(String(row), forType: .init("com.menwitz.News-Wall.channel"))
+        return true
+    }
+
+    func tableView(_ tableView: NSTableView, validateDrop info: NSDraggingInfo, proposedRow row: Int, proposedDropOperation dropOperation: NSTableView.DropOperation) -> NSDragOperation {
+        return dropOperation == .above ? .move : []
+    }
+
+    func tableView(_ tableView: NSTableView, acceptDrop info: NSDraggingInfo, row: Int, dropOperation: NSTableView.DropOperation) -> Bool {
+        guard let str = info.draggingPasteboard.string(forType: .init("com.menwitz.News-Wall.channel")),
+              let oldRow = Int(str) else { return false }
+        
+        var newRow = row
+        if oldRow < newRow { newRow -= 1 }
+        
+        var arr = items
+        let item = arr.remove(at: oldRow)
+        arr.insert(item, at: newRow)
+        items = arr
+        
+        table.reloadData()
+        return true
     }
 
     @objc private func add() {
@@ -95,7 +132,7 @@ final class ChannelsWindowController: NSWindowController, NSTableViewDataSource,
             let groupStr = g.stringValue.trimmingCharacters(in: .whitespacesAndNewlines)
             if let url = URL(string: urlStr) {
                 var arr = items
-                let grp = ChannelGroup(rawValue: groupStr).flatMap { $0 } ?? .custom
+                let grp = groupStr.isEmpty ? "Custom" : groupStr
                 arr.append(Channel(title: title, url: url, enabled: true, group: grp))
                 items = arr
                 table.reloadData()
@@ -106,14 +143,14 @@ final class ChannelsWindowController: NSWindowController, NSTableViewDataSource,
     @objc private func edit() {
         let row = table.selectedRow; guard row >= 0 else { return }
         let it = items[row]
-        let (alert, t, u, g) = channelEditor(title: it.title, url: it.url.absoluteString, group: it.group.rawValue)
+        let (alert, t, u, g) = channelEditor(title: it.title, url: it.url.absoluteString, group: it.group)
         if alert.runModal() == .alertFirstButtonReturn {
             let title = t.stringValue.trimmingCharacters(in: .whitespacesAndNewlines)
             let urlStr = u.stringValue.trimmingCharacters(in: .whitespacesAndNewlines)
             let groupStr = g.stringValue.trimmingCharacters(in: .whitespacesAndNewlines)
             if let url = URL(string: urlStr) {
                 var arr = items
-                let grp = ChannelGroup(rawValue: groupStr).flatMap { $0 } ?? .custom
+                let grp = groupStr.isEmpty ? "Custom" : groupStr
                 arr[row] = Channel(id: it.id, title: title, url: url, enabled: it.enabled, group: grp)
                 items = arr
                 table.reloadData()
@@ -132,12 +169,39 @@ final class ChannelsWindowController: NSWindowController, NSTableViewDataSource,
         window?.close()
     }
 
+    @objc private func importChannels() {
+        let panel = NSOpenPanel()
+        panel.allowedContentTypes = [.json]
+        panel.begin { [weak self] resp in
+            guard resp == .OK, let url = panel.url, let self = self else { return }
+            if let data = try? Data(contentsOf: url),
+               let newChannels = try? JSONDecoder().decode([Channel].self, from: data) {
+                // Merge or replace? Let's append for now, or ask user.
+                // Simple approach: Append
+                self.items.append(contentsOf: newChannels)
+                self.table.reloadData()
+            }
+        }
+    }
+
+    @objc private func exportChannels() {
+        let panel = NSSavePanel()
+        panel.allowedContentTypes = [.json]
+        panel.nameFieldStringValue = "channels.json"
+        panel.begin { [weak self] resp in
+            guard resp == .OK, let url = panel.url, let self = self else { return }
+            if let data = try? JSONEncoder().encode(self.items) {
+                try? data.write(to: url)
+            }
+        }
+    }
+
     private func channelEditor(title: String = "", url: String = "", group: String = "All")
     -> (alert: NSAlert, titleField: NSTextField, urlField: NSTextField, groupField: NSTextField) {
 
         let a = NSAlert()
         a.messageText = "Channel"
-        a.informativeText = "Enter Title, URL, Group (\(ChannelGroup.allCases.map{$0.rawValue}.joined(separator: ", ")))"
+        a.informativeText = "Enter Title, URL, Group"
         a.addButton(withTitle: "OK")
         a.addButton(withTitle: "Cancel")
 

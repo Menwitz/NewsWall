@@ -11,6 +11,7 @@ final class TileView: NSView, WKNavigationDelegate {
     let web: WKWebView
     let label = NSTextField(labelWithString: "")
     let stats = NSTextField(labelWithString: "")
+    let spinner = NSProgressIndicator()
     private(set) var channel: Channel
     private var playerReady = false
     private let playerID = "player_" + UUID().uuidString.replacingOccurrences(of: "-", with: "")
@@ -100,12 +101,26 @@ final class TileView: NSView, WKNavigationDelegate {
         dbl.numberOfClicksRequired = 2
         addGestureRecognizer(dbl)
 
+        // Spinner
+        spinner.style = .spinning
+        spinner.controlSize = .small
+        spinner.isIndeterminate = true
+        spinner.translatesAutoresizingMaskIntoConstraints = false
+        addSubview(spinner)
+        NSLayoutConstraint.activate([
+            spinner.centerXAnchor.constraint(equalTo: centerXAnchor),
+            spinner.centerYAnchor.constraint(equalTo: centerYAnchor)
+        ])
     }
 
 
     required init?(coder: NSCoder) { nil }
 
     @objc private func handleClick() { delegate?.tileRequestedActivate(self) }
+
+    @objc private func doubleClicked() {
+        reload()
+    }
 
 //    func load() {
 //        let origin = "https://localhost"
@@ -165,6 +180,8 @@ final class TileView: NSView, WKNavigationDelegate {
 
     func load() {
         playerReady = false
+        spinner.startAnimation(nil)
+        spinner.isHidden = false
         lastTime = -1; stillTicks = 0; watchdogTimer?.invalidate()
 
         // Build the exact iframe src that you already know plays
@@ -198,6 +215,8 @@ final class TileView: NSView, WKNavigationDelegate {
                 events: {
                   onReady: function(e){
                     try { e.target.mute(); e.target.playVideo(); } catch(_){}
+                    window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.ytmsg &&
+                      window.webkit.messageHandlers.ytmsg.postMessage({type:'ready'});
                   }
                 },
                 playerVars: {
@@ -253,6 +272,12 @@ final class TileView: NSView, WKNavigationDelegate {
             let t = dict["time"] as? Double ?? 0
             let b = dict["buf"] as? Double ?? 0
             DispatchQueue.main.async { self.stats.stringValue = String(format: "t=%5.1fs  buf=%3.0f%%", t, b*100) }
+        } else if dict["type"] as? String == "ready" {
+            DispatchQueue.main.async {
+                self.playerReady = true
+                self.spinner.stopAnimation(nil)
+                self.spinner.isHidden = true
+            }
         }
     }
 

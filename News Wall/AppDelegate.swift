@@ -1,9 +1,12 @@
 import AppKit
 import WebKit
+import SwiftUI
 
 final class AppDelegate: NSObject, NSApplicationDelegate {
     var window: NSWindow!
     var wallVC: WallViewController!
+    var settingsWindow: NSWindow?
+    var layoutsWindow: NSWindow?
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         wallVC = WallViewController()
@@ -27,10 +30,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         let appMenu = NSMenu()
         appMenuItem.submenu = appMenu
 
-        appMenu.addItem(withTitle: "Open Channels File…", action: #selector(openChannels), keyEquivalent: ",")
+        appMenu.addItem(withTitle: "Preferences…", action: #selector(openSettings), keyEquivalent: ",")
+        appMenu.addItem(withTitle: "Layouts…", action: #selector(openLayouts), keyEquivalent: "l")
+        appMenu.addItem(withTitle: "Open Channels File…", action: #selector(openChannels), keyEquivalent: "")
         appMenu.addItem(.separator())
         appMenu.addItem(withTitle: "Quit", action: #selector(NSApplication.terminate(_:)), keyEquivalent: "q")
-        appMenu.addItem(withTitle: "Channels…", action: #selector(openChannelsWindow), keyEquivalent: "l")
+        appMenu.addItem(withTitle: "Channels…", action: #selector(openChannelsWindow), keyEquivalent: "k")
 
         NSApp.mainMenu = mainMenu
     }
@@ -50,6 +55,38 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             self?.wallVC?.loadPage(0)
         }
         channelsWC?.showWindow(nil)
+        NSApp.activate(ignoringOtherApps: true)
+    }
+
+    @objc func openSettings() {
+        if settingsWindow == nil {
+            let view = SettingsView()
+            settingsWindow = NSWindow(
+                contentRect: NSRect(x: 0, y: 0, width: 350, height: 250),
+                styleMask: [.titled, .closable, .miniaturizable],
+                backing: .buffered, defer: false)
+            settingsWindow?.center()
+            settingsWindow?.title = "Preferences"
+            settingsWindow?.contentView = NSHostingView(rootView: view)
+            settingsWindow?.isReleasedWhenClosed = false
+        }
+        settingsWindow?.makeKeyAndOrderFront(nil)
+        NSApp.activate(ignoringOtherApps: true)
+    }
+
+    @objc func openLayouts() {
+        if layoutsWindow == nil {
+            let view = LayoutManagerView()
+            layoutsWindow = NSWindow(
+                contentRect: NSRect(x: 0, y: 0, width: 350, height: 400),
+                styleMask: [.titled, .closable, .miniaturizable, .resizable],
+                backing: .buffered, defer: false)
+            layoutsWindow?.center()
+            layoutsWindow?.title = "Layouts"
+            layoutsWindow?.contentView = NSHostingView(rootView: view)
+            layoutsWindow?.isReleasedWhenClosed = false
+        }
+        layoutsWindow?.makeKeyAndOrderFront(nil)
         NSApp.activate(ignoringOtherApps: true)
     }
 }

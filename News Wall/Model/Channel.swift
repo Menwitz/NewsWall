@@ -5,10 +5,10 @@ struct Channel: Codable, Hashable, Identifiable {
     var title: String
     var url: URL
     var enabled: Bool
-    var group: ChannelGroup = .all
+    var group: String = "All"
 
 
-    init(id: UUID = UUID(), title: String, url: URL, enabled: Bool = true, group: ChannelGroup = .all) {
+    init(id: UUID = UUID(), title: String, url: URL, enabled: Bool = true, group: String = "All") {
         self.id = id
         self.title = title
         self.url = url
@@ -16,7 +16,7 @@ struct Channel: Codable, Hashable, Identifiable {
         self.group = group
     }
 
-    enum CodingKeys: String, CodingKey { case id, title, url, enabled }
+    enum CodingKeys: String, CodingKey { case id, title, url, enabled, group }
 
     init(from decoder: Decoder) throws {
         let c = try decoder.container(keyedBy: CodingKeys.self)
@@ -24,5 +24,6 @@ struct Channel: Codable, Hashable, Identifiable {
         self.title   = try c.decode(String.self, forKey: .title)
         self.url     = try c.decode(URL.self, forKey: .url)
         self.enabled = try c.decodeIfPresent(Bool.self, forKey: .enabled) ?? true
+        self.group   = try c.decodeIfPresent(String.self, forKey: .group) ?? "All"
     }
 }

@@ -32,17 +32,30 @@ final class ChannelStore {
         }
     }
 
-    // Initial favorites — adjust to taste
+    // Curated 24/7 live news channels
     static let seed: [Channel] = [
-        Channel(title: "Feed 1", url: URL(string:"https://youtu.be/pSa4yQr2fdQ")!),
-        Channel(title: "Feed 2", url: URL(string:"https://youtu.be/KQp-e_XQnDE")!),
-        Channel(title: "Feed 3", url: URL(string:"https://youtu.be/NiRIbKwAejk")!),
-        Channel(title: "Feed 4", url: URL(string:"https://youtu.be/l8PMl7tUDIE")!),
-        Channel(title: "Feed 5", url: URL(string:"https://youtu.be/iEpJwprxDdk")!),
-        Channel(title: "Feed 6", url: URL(string:"https://youtu.be/bNyUyrR0PHo")!),
-        Channel(title: "Feed 7", url: URL(string:"https://youtu.be/f39oHo6vFLg")!),
-        Channel(title: "Feed 8", url: URL(string:"https://youtu.be/gCNeDWCI0vo")!),
-        Channel(title: "Feed 9", url: URL(string:"https://youtu.be/b6R9-7KZ8YM")!)
+        // Global News
+        Channel(title: "Sky News", url: URL(string:"https://www.youtube.com/watch?v=9Auq9mYxFEE")!, group: "World"),
+        Channel(title: "Al Jazeera English", url: URL(string:"https://www.youtube.com/watch?v=gCNeDWCI0vo")!, group: "World"),
+        Channel(title: "BBC News", url: URL(string:"https://www.youtube.com/watch?v=pSa4yQr2fdQ")!, group: "World"),
+        Channel(title: "DW News", url: URL(string:"https://www.youtube.com/watch?v=NiRIbKwAejk")!, group: "World"),
+        Channel(title: "France 24 English", url: URL(string:"https://www.youtube.com/watch?v=l8PMl7tUDIE")!, group: "World"),
+        
+        // US News
+        Channel(title: "NBC News NOW", url: URL(string:"https://www.youtube.com/watch?v=iEpJwprxDdk")!, group: "Finance"),
+        Channel(title: "ABC News Live", url: URL(string:"https://www.youtube.com/watch?v=bNyUyrR0PHo")!, group: "Finance"),
+        Channel(title: "CBS News 24/7", url: URL(string:"https://www.youtube.com/watch?v=f39oHo6vFLg")!, group: "Finance"),
+        
+        // Business News
+        Channel(title: "Bloomberg Television", url: URL(string:"https://www.youtube.com/watch?v=dp8PhLsUcFE")!, group: "Finance"),
+        Channel(title: "CNBC Television", url: URL(string:"https://www.youtube.com/watch?v=9NyxcX3rhQs")!, group: "Finance"),
+        
+        // Asian News
+        Channel(title: "WION", url: URL(string:"https://www.youtube.com/watch?v=b6R9-7KZ8YM")!, group: "World"),
+        Channel(title: "CNA", url: URL(string:"https://www.youtube.com/watch?v=XWq5kBlakcQ")!, group: "World"),
+        
+        // Tech & Innovation
+        Channel(title: "Euronews", url: URL(string:"https://www.youtube.com/watch?v=pykpO5kQJ98")!, group: "Tech"),
     ]
 }
 

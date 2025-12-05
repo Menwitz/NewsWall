@@ -1,4 +1,6 @@
 import AppKit
+import Combine
+import SwiftUI
 
 final class WallViewController: NSViewController, TileViewDelegate {
     private var store: ChannelStore!
@@ -6,8 +8,10 @@ final class WallViewController: NSViewController, TileViewDelegate {
     private(set) var tiles: [TileView] = []
     private var pageIndex = 0
 
-    private var filterGroup: ChannelGroup = .all
+    private var filterGroup: String = "All"
     private var globalMuted = false
+    private var cancellables = Set<AnyCancellable>()
+    private var layoutStore = LayoutStore.shared
 
     private var rows: Int { GridConfig.rows }
     private var cols: Int { GridConfig.cols }
@@ -25,6 +29,40 @@ final class WallViewController: NSViewController, TileViewDelegate {
         buildGrid()
         loadPage(0)
         installKeyMonitor()
+        setupObservers()
+    }
+
+    private func setupObservers() {
+        SettingsStore.shared.$rows
+            .receive(on: RunLoop.main)
+            .sink { [weak self] _ in self?.rebuildGrid() }
+            .store(in: &cancellables)
+            
+        SettingsStore.shared.$cols
+            .receive(on: RunLoop.main)
+            .sink { [weak self] _ in self?.rebuildGrid() }
+            .store(in: &cancellables)
+
+        SettingsStore.shared.$ytControls
+            .receive(on: RunLoop.main)
+            .sink { [weak self] _ in self?.reloadVisibleTiles() }
+            .store(in: &cancellables)
+
+        // Observe layout changes
+        layoutStore.$activeLayoutID
+            .receive(on: RunLoop.main)
+            .sink { [weak self] _ in self?.applyActiveLayout() }
+            .store(in: &cancellables)
+    }
+
+    private func applyActiveLayout() {
+        guard let layout = layoutStore.activeLayout else { return }
+        
+        // Update grid size to match layout
+        SettingsStore.shared.rows = layout.rows
+        SettingsStore.shared.cols = layout.cols
+        
+        // Grid will rebuild automatically via settings observers
     }
 
     private func buildGrid() {
@@ -60,6 +98,24 @@ final class WallViewController: NSViewController, TileViewDelegate {
                 row.addArrangedSubview(v)
             }
         }
+        
+        setupControlBar()
+    }
+    
+    private func setupControlBar() {
+        let bar = ControlBarView(
+            onMuteAll: { [weak self] in self?.tiles.forEach { $0.mute(true) } },
+            onReloadAll: { [weak self] in self?.reloadVisibleTiles() },
+            onSettings: { NSApp.sendAction(#selector(AppDelegate.openSettings), to: nil, from: nil) }
+        )
+        let hosting = NSHostingView(rootView: bar)
+        hosting.translatesAutoresizingMaskIntoConstraints = false
+        view.addSubview(hosting)
+        
+        NSLayoutConstraint.activate([
+            hosting.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            hosting.bottomAnchor.constraint(equalTo: view.bottomAnchor, constant: -20)
+        ])
     }
     
     private func rebuildGrid() {
@@ -77,7 +133,7 @@ final class WallViewController: NSViewController, TileViewDelegate {
         tiles.removeAll()
         pageIndex = idx
 
-        let all = store.channels.filter { $0.enabled && (filterGroup == .all || $0.group == filterGroup) }
+        let all = store.channels.filter { $0.enabled && (filterGroup == "All" || $0.group == filterGroup) }
         let perPage = rows * cols
         let start = idx * perPage
         let slice = start < all.count ? all[start..<min(start+perPage, all.count)] : []
@@ -160,26 +216,25 @@ final class WallViewController: NSViewController, TileViewDelegate {
                         return nil
                     case "c":
                         GridConfig.ytControls.toggle()
-                        self.reloadVisibleTiles()
                         return nil
                     case "+":
                         GridConfig.rows = min(5, GridConfig.rows + 1)
                         GridConfig.cols = min(5, GridConfig.cols + 1)
-                        self.rebuildGrid(); return nil
+                        return nil
                     case "-":
                         GridConfig.rows = max(1, GridConfig.rows - 1)
                         GridConfig.cols = max(1, GridConfig.cols - 1)
-                        self.rebuildGrid(); return nil
+                        return nil
                     case "0":
-                        self.filterGroup = .all; self.loadPage(0); return nil
+                        self.filterGroup = "All"; self.loadPage(0); return nil
                     case "1":
-                        self.filterGroup = .finance; self.loadPage(0); return nil
+                        self.filterGroup = "Finance"; self.loadPage(0); return nil
                     case "2":
-                        self.filterGroup = .world; self.loadPage(0); return nil
+                        self.filterGroup = "World"; self.loadPage(0); return nil
                     case "3":
-                        self.filterGroup = .tech; self.loadPage(0); return nil
+                        self.filterGroup = "Tech"; self.loadPage(0); return nil
                     case "4":
-                        self.filterGroup = .arabic; self.loadPage(0); return nil
+                        self.filterGroup = "Arabic"; self.loadPage(0); return nil
                     default: break
                     }
                 }
